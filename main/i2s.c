@@ -37,7 +37,6 @@ void i2s_init( int i2s_num, int bits, int sample_rate, int mclk, int bck, int ws
 	i2s_config_t i2s_config = {
         .mode = I2S_MODE_MASTER | I2S_MODE_TX,
         .sample_rate = sample_rate,
-//        .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
         .bits_per_sample = bits,
         .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
 		.communication_format = I2S_COMM_FORMAT_STAND_MSB,
