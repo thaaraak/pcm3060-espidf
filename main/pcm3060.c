@@ -90,10 +90,19 @@ static void setup_sine_waves( int amplitude )
 
 #define RESET_GPIO 17
 
+void do24bit();
+void do16bit();
+
 void app_main(void)
 {
+
+	do24bit();
+}
+
+void do24bit()
+{
     printf("Initializing I2S\n");
-    i2s_init( I2S_NUM, SAMPLE_RATE, I2S_MCLK_PIN, I2S_BCK_IO, I2S_WS_IO, I2S_DO_IO, I2S_DI_IO );
+    i2s_init( I2S_NUM, I2S_BITS_PER_SAMPLE_32BIT, SAMPLE_RATE, I2S_MCLK_PIN, I2S_BCK_IO, I2S_WS_IO, I2S_DO_IO, I2S_DI_IO );
 
     gpio_reset_pin(RESET_GPIO);
     gpio_set_direction(RESET_GPIO, GPIO_MODE_OUTPUT);
@@ -102,25 +111,8 @@ void app_main(void)
     printf("Initializing I2C\n");
     i2c_master_init( 0, 23, 22 );
 
-/*
-    printf("Reset\n");
-
-    gpio_set_level(RESET_GPIO, 0);
-
-    i2c_write( 0x46, 64, 0b11110000 );
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-*/
-
     printf("Resetting PCM - power ADC/DAC\n");
     i2c_write( 0x46, 64, 0b11000000 );
-    /*
-    vTaskDelay(100 / portTICK_PERIOD_MS);
-
-    gpio_set_level(RESET_GPIO, 1);
-    printf("Reset done\n");
-*/
-
-
 
     // Set LRCLK1, BCK1, SCK1 for DAC
     // Set I2S Slave mode for DAC

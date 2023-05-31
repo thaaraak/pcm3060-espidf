@@ -19,7 +19,7 @@
 #include "driver/i2s.h"
 #include "soc/gpio_sig_map.h"
 #include "math.h"
-
+#include "string.h"
 
 #define I2C_MASTER_NUM	0
 #define ACK_CHECK_EN 0x1

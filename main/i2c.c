@@ -66,6 +66,9 @@ esp_err_t i2c_master_init( int id, int scl, int sda )
 {
     i2c_master_port = id;
     i2c_config_t conf;
+
+    memset( &conf, 0, sizeof(conf) );
+
     conf.mode = I2C_MODE_MASTER;
     conf.sda_io_num = sda;
     conf.sda_pullup_en = GPIO_PULLUP_ENABLE;

@@ -19,8 +19,9 @@
 #include "driver/i2s.h"
 #include "soc/gpio_sig_map.h"
 #include "math.h"
+#include "string.h"
 
 esp_err_t i2s_mclk_gpio_select(i2s_port_t i2s_num, gpio_num_t gpio_num);
-void i2s_init( int i2s_num, int sample_rate, int mclk, int bck, int ws, int dout, int din );
+void i2s_init( int i2s_num, int bits, int sample_rate, int mclk, int bck, int ws, int dout, int din );
 
 #endif
