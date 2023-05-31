@@ -133,13 +133,19 @@ void app_main(void)
 
     size_t i2s_bytes_write = 0;
 
-    int amplitude = 3800000;
-    int start_dir = 50;
+    int amplitude = 1000000;
+    int start_dir = 500;
     int dir = start_dir;
 
     while (1)
     {
+    	amplitude += dir;
+    	if ( amplitude < 1000000 || amplitude > 3500000 )
+    		dir *= -1;
+
     	setup_sine_waves( amplitude );
+
+
     	i2s_write(I2S_NUM, txBuf, BUF_SAMPLES*4, &i2s_bytes_write, -1);
 
     	//printf( "Bytes: %d\n", i2s_bytes_write );
