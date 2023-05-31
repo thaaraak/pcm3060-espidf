@@ -102,35 +102,30 @@ void app_main(void)
     printf("Initializing I2C\n");
     i2c_master_init( 0, 23, 22 );
 
-    // Reset
-    //printf("Resetting PCM3060\n");
-    //i2c_write( 0x46, 64, 0b00000000 );
-    //vTaskDelay(1000 / portTICK_PERIOD_MS);
-
-    // Power up ADC
-    // Power up DAC
-    // Set Differential output
+/*
     printf("Reset\n");
 
     gpio_set_level(RESET_GPIO, 0);
 
     i2c_write( 0x46, 64, 0b11110000 );
     vTaskDelay(1000 / portTICK_PERIOD_MS);
+*/
 
     printf("Resetting PCM - power ADC/DAC\n");
     i2c_write( 0x46, 64, 0b11000000 );
+    /*
     vTaskDelay(100 / portTICK_PERIOD_MS);
 
     gpio_set_level(RESET_GPIO, 1);
     printf("Reset done\n");
-
+*/
 
 
 
     // Set LRCLK1, BCK1, SCK1 for DAC
     // Set I2S Slave mode for DAC
     // Set 24 bit I2S for DAC
-    //i2c_write( 0x46, 67, 0b10000000);
+    i2c_write( 0x46, 67, 0b10000000);
 
     uint8_t val;
     val = i2c_read( 0x46, 64 );
