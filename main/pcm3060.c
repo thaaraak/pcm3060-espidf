@@ -52,27 +52,24 @@
 int32_t rxBuf[BUF_SAMPLES];
 int32_t txBuf[BUF_SAMPLES];
 
+int16_t rxBuf16[BUF_SAMPLES];
+int16_t txBuf16[BUF_SAMPLES];
+
 static int cnt = 0;
 
 static void setup_sine_waves( int amplitude )
 {
 	double sin_float;
 
-    size_t i2s_bytes_write = 0;
-
-    //printf("\r\nFree mem=%d, written data=%d\n", esp_get_free_heap_size(), BUF_SAMPLES*2 );
-
     for( int pos = 0; pos < BUF_SAMPLES; pos += 2 )
     {
         sin_float = amplitude * sin( pos/2 * 2 * PI / SAMPLE_PER_CYCLE);
 
-        uint32_t lval = sin_float;
-        uint32_t rval = sin_float;
+        int32_t lval = sin_float;
+        int32_t rval = sin_float;
 
         txBuf[pos] = lval << 8;
         txBuf[pos+1] = rval << 8;
-
-        //printf( "%d  %04x:%04x\n", lval, txBuf[pos],txBuf[pos+1] );
 
     }
 
@@ -86,6 +83,33 @@ static void setup_sine_waves( int amplitude )
     */
 }
 
+static void setup_sine_waves16( int amplitude )
+{
+	double sin_float;
+
+
+    for( int pos = 0; pos < BUF_SAMPLES; pos += 2 )
+    {
+        sin_float = amplitude * sin( pos/2 * 2 * PI / SAMPLE_PER_CYCLE);
+
+        int16_t lval = sin_float;
+        int16_t rval = sin_float;
+
+        txBuf16[pos] = lval;
+        txBuf16[pos+1] = rval;
+
+    }
+
+    /*
+    if ( cnt++ == 10000 )
+    {
+    	cnt = 0;
+    	for( int pos = 0; pos < BUF_SAMPLES; pos += 2 )
+            printf( "%04d:%04d\n", txBuf16[pos],txBuf16[pos+1] );
+    }
+    */
+}
+
 
 
 #define RESET_GPIO 17
@@ -95,13 +119,13 @@ void do16bit();
 
 void app_main(void)
 {
-
 	do24bit();
+	//do16bit();
 }
 
 void do24bit()
 {
-    printf("Initializing I2S\n");
+    printf("Initializing I2S - 24 bit\n");
     i2s_init( I2S_NUM, I2S_BITS_PER_SAMPLE_32BIT, SAMPLE_RATE, I2S_MCLK_PIN, I2S_BCK_IO, I2S_WS_IO, I2S_DO_IO, I2S_DI_IO );
 
     gpio_reset_pin(RESET_GPIO);
@@ -139,6 +163,51 @@ void do24bit()
 
 
     	i2s_write(I2S_NUM, txBuf, BUF_SAMPLES*4, &i2s_bytes_write, -1);
+
+    	//printf( "Bytes: %d\n", i2s_bytes_write );
+    }
+}
+
+
+void do16bit()
+{
+    printf("Initializing I2S - 16 bit\n");
+    i2s_init( I2S_NUM, I2S_BITS_PER_SAMPLE_16BIT, SAMPLE_RATE, I2S_MCLK_PIN, I2S_BCK_IO, I2S_WS_IO, I2S_DO_IO, I2S_DI_IO );
+
+    gpio_reset_pin(RESET_GPIO);
+    gpio_set_direction(RESET_GPIO, GPIO_MODE_OUTPUT);
+    gpio_set_level(RESET_GPIO, 1);
+
+    printf("Initializing I2C\n");
+    i2c_master_init( 0, 23, 22 );
+
+    printf("Resetting PCM - power ADC/DAC\n");
+    i2c_write( 0x46, 64, 0b11000000 );
+
+    // Set LRCLK1, BCK1, SCK1 for DAC
+    // Set I2S Slave mode for DAC
+    // Set 16 bit I2S for DAC
+    i2c_write( 0x46, 67, 0b10000011);
+
+    uint8_t val;
+    val = i2c_read( 0x46, 64 );
+    val = i2c_read( 0x46, 67 );
+
+    size_t i2s_bytes_write = 0;
+
+    int amplitude = 20000;
+    int start_dir = 100;
+    int dir = start_dir;
+
+    while (1)
+    {
+    	amplitude += dir;
+    	if ( amplitude < 5000 || amplitude > 28000 )
+    		dir *= -1;
+
+    	setup_sine_waves16( amplitude );
+
+    	i2s_write(I2S_NUM, txBuf16, BUF_SAMPLES*2, &i2s_bytes_write, -1);
 
     	//printf( "Bytes: %d\n", i2s_bytes_write );
     }
