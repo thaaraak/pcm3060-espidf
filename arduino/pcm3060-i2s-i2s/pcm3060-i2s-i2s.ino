@@ -1,14 +1,17 @@
-#include <Wire.h>
-#include "AudioTools.h"
+/**
+ * @file streams-i2s-filter-i2s.ino
+ * @brief Copy audio from I2S to I2S using an FIR filter
+ * @author Phil Schatzmann
+ * @copyright GPLv3
+ */
 
-typedef int32_t sound_t;                                   // sound will be represented as int16_t (with 2 bytes)
-uint16_t sample_rate=44100;
-uint8_t channels = 2;                                      // The stream will have 2 channels 
-SineWaveGenerator<sound_t> sineWave(1000000000);                // subclass of SoundGenerator with max amplitude of 32000
-//SquareWaveGenerator<sound_t> sineWave(2000000000);                // subclass of SoundGenerator with max amplitude of 32000
-GeneratedSoundStream<sound_t> sound(sineWave);             // Stream generated from sine wave
-I2SStream out; 
-StreamCopy copier(out, sound);                             // copies sound into i2s
+#include "AudioTools.h"
+#include "Wire.h"
+
+uint16_t sample_rate=48000;
+uint16_t channels = 2;
+I2SStream in;
+StreamCopy copier(in, in); 
 
 TwoWire wire(0);
 
@@ -58,7 +61,7 @@ void setupPCM3060()
     delay(50);
     writePCMRegister( 64, 0b11000000 );
     digitalWrite(RESET_PIN, HIGH); 
-    
+
     writePCMRegister( 67, 0b10000000 );
     writePCMRegister( 72, 0b00000000 );
 
@@ -67,7 +70,6 @@ void setupPCM3060()
 
     writePCMRegister( 65, 0b11111111 );
     writePCMRegister( 66, 0b11111111 );
-    digitalWrite(RESET_PIN, HIGH); 
 
 }
 
@@ -100,7 +102,7 @@ void setup()
 
     // start I2S
   Serial.println("starting I2S...");
-  auto config = out.defaultConfig(RXTX_MODE);
+  auto config = in.defaultConfig(RXTX_MODE);
   config.sample_rate = sample_rate;
   config.bits_per_sample = 32;
   config.i2s_format = I2S_STD_FORMAT;
@@ -112,9 +114,8 @@ void setup()
   config.pin_data_rx = 5;
   config.pin_mck = 0;
   config.use_apll = true;  
-  out.begin(config);
+  in.begin(config);
 
-  sineWave.begin(channels, sample_rate, 2000);
   Serial.println("started...");
 }
 
